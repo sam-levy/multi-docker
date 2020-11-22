@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t levysamuel/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run levysamuel/react-test npm test -- --coverage 
+
+after_success: 
+  - docker build -t levysamuel/multi-client ./client
+  - docker build -t levysamuel/multi-nginx ./nginx
+  - docker build -t levysamuel/multi-server ./server
+  - docker build -t levysamuel/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push levysamuel/multi-client
+  - docker push levysamuel/multi-nginx
+  - docker push levysamuel/multi-server
+  - docker push levysamuel/multi-worker
